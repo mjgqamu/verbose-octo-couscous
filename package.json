@@ -1,0 +1,28 @@
+{
+  "name": "sitepilot",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean",
+    "db:generate": "cd packages/db && bun run generate",
+    "db:migrate": "cd packages/db && bun run migrate",
+    "db:seed": "cd packages/db && bun run seed",
+    "db:push": "cd packages/db && bun run push"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "bun@1.3.14",
+  "dependencies": {
+    "ioredis": "^5.11.1",
+    "openai": "^6.48.0"
+  }
+}

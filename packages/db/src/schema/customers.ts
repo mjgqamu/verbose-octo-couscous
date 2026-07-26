@@ -1,0 +1,42 @@
+import { pgTable, uuid, varchar, text, boolean, decimal, integer, jsonb, timestamp, index } from "drizzle-orm/pg-core";
+import { organizations } from "./organizations";
+
+export const customers = pgTable(
+  "customers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: uuid("org_id").notNull().references(() => organizations.id),
+    firstName: varchar("first_name", { length: 100 }).notNull(),
+    lastName: varchar("last_name", { length: 100 }).notNull(),
+    company: varchar("company", { length: 255 }),
+    email: varchar("email", { length: 255 }),
+    phone: varchar("phone", { length: 50 }),
+    phoneAlt: varchar("phone_alt", { length: 50 }),
+    addressLine1: varchar("address_line1", { length: 255 }),
+    addressLine2: varchar("address_line2", { length: 255 }),
+    city: varchar("city", { length: 100 }),
+    state: varchar("state", { length: 100 }),
+    postalCode: varchar("postal_code", { length: 20 }),
+    country: varchar("country", { length: 2 }),
+    latitude: decimal("latitude", { precision: 10, scale: 7 }),
+    longitude: decimal("longitude", { precision: 10, scale: 7 }),
+    source: varchar("source", { length: 50 }),
+    tags: jsonb("tags").default([]),
+    notes: text("notes"),
+    customFields: jsonb("custom_fields").default({}),
+    lifetimeValue: decimal("lifetime_value", { precision: 12, scale: 2 }).default("0"),
+    totalJobs: integer("total_jobs").default(0),
+    lastJobAt: timestamp("last_job_at", { withTimezone: true }),
+    stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+    portalEnabled: boolean("portal_enabled").default(false),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_customers_org").on(table.orgId),
+    index("idx_customers_org_name").on(table.orgId, table.lastName, table.firstName),
+    index("idx_customers_org_phone").on(table.orgId, table.phone),
+    index("idx_customers_org_email").on(table.orgId, table.email),
+  ],
+);

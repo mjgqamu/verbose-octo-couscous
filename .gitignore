@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+bun.lock
+
+# Build output
+dist/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+docker/pgdata/
+docker/redisdata/
+
+# Database
+packages/db/src/migrations/meta/
+
+# Uploads (dev)
+data/
+
+# Logs
+*.log
