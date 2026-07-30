@@ -42,6 +42,9 @@ import { TechnicianJobView } from "./features/technician/TechnicianJobView";
 // Analytics
 import { AnalyticsDashboard } from "./features/analytics/AnalyticsDashboard";
 
+// Automations
+import { AutomationsPage } from "./features/automations/AutomationsPage";
+
 // Customer Portal
 import { CustomerLayout } from "./features/customer-portal/CustomerLayout";
 import { CustomerLoginPage } from "./features/customer-portal/CustomerLoginPage";
@@ -117,9 +120,10 @@ export function App() {
             <Route path="/dashboard/admin" element={<PlaceholderPage title="Admin" />} />
           </Route>
 
-          {/* Protected: Reports (business_owner only) */}
+          {/* Protected: Reports & Automations (business_owner only) */}
           <Route element={<ProtectedRoute allowedRoles={["business_owner"]} />}>
             <Route path="/dashboard/reports" element={<AnalyticsDashboard />} />
+            <Route path="/dashboard/automations" element={<AutomationsPage />} />
           </Route>
 
           {/* Customer Portal — public login */}

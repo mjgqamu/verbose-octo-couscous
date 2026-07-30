@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   Bell,
   Phone,
+  Zap,
 } from "lucide-react";
 
 interface NavItem {
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { label: "Invoices", icon: <DollarSign className="w-5 h-5" />, path: "/dashboard/invoices", roles: ["business_owner", "office_admin"] },
   { label: "Messages", icon: <MessageSquare className="w-5 h-5" />, path: "/dashboard/messages", roles: ["business_owner", "office_admin"] },
   { label: "Reports", icon: <BarChart className="w-5 h-5" />, path: "/dashboard/reports", roles: ["business_owner"] },
+  { label: "Automations", icon: <Zap className="w-5 h-5" />, path: "/dashboard/automations", roles: ["business_owner"] },
   { label: "Settings", icon: <Settings className="w-5 h-5" />, path: "/dashboard/settings", roles: ["business_owner"] },
   { label: "Admin", icon: <Shield className="w-5 h-5" />, path: "/dashboard/admin", roles: ["platform_admin"] },
 ];
