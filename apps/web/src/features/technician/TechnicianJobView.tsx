@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  User,
   Wrench,
   Camera,
   Plus,
@@ -235,7 +234,7 @@ export function TechnicianJobView() {
   const allChecked = (): boolean => {
     const defaultChecked = DEFAULT_CHECKLIST.every((item) => checklist[item.key]);
     const customChecked = customChecklistItems.every(
-      (item, idx) => checklist[`custom_${idx}`]
+      (_item, idx) => checklist[`custom_${idx}`]
     );
     return defaultChecked && customChecked;
   };

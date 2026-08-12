@@ -198,7 +198,6 @@ export function InvoiceDetailPage() {
   }
 
   const badge = getStatusBadge(invoice.status);
-  const isEditable = ["draft", "sent"].includes(invoice.status);
 
   return (
     <DashboardLayout>

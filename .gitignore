@@ -33,3 +33,9 @@ data/
 
 # Logs
 *.log
+# Database (dev — SQLite files, incl. WAL/SHM)
+dev.db
+dev.db-shm
+dev.db-wal
+# TypeScript incremental build cache
+*.tsbuildinfo

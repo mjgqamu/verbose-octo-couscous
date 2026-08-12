@@ -1,4 +1,4 @@
-import { db, schema, eq, and, isNull, desc, asc, sql, count, gt, gte, lt, inArray } from "@sitepilot/db";
+import { db, schema, eq, and, or, iLike, arrayContains, isNull, desc, asc, sql, count, gt, gte, lt, inArray } from "@sitepilot/db";
 import type { JobStatus } from "@sitepilot/shared";
 
 // ---- Valid status transitions ----
@@ -171,7 +171,7 @@ export class JobManager {
 
     if (technicianId) {
       // assignedTechs is an array; check if it contains the tech
-      conditions.push(sql`${technicianId} = ANY(${schema.jobs.assignedTechs})`);
+      conditions.push(arrayContains(schema.jobs.assignedTechs, technicianId));
     }
 
     if (customerId) {
@@ -181,7 +181,11 @@ export class JobManager {
     if (search) {
       const pattern = `%${search}%`;
       conditions.push(
-        sql`(${schema.jobs.title} ILIKE ${pattern} OR ${schema.jobs.number} ILIKE ${pattern} OR ${schema.jobs.description} ILIKE ${pattern})`
+        or(
+        iLike(schema.jobs.title, pattern),
+        iLike(schema.jobs.number, pattern),
+        iLike(schema.jobs.description, pattern)
+      )!
       );
     }
 
@@ -268,7 +272,7 @@ export class JobManager {
       }
     }
     if (technicianId) {
-      countConditions.push(sql`${technicianId} = ANY(${schema.jobs.assignedTechs})`);
+      countConditions.push(arrayContains(schema.jobs.assignedTechs, technicianId));
     }
 
     const [totalRow] = await db
@@ -602,7 +606,7 @@ export class JobManager {
       .where(and(
         eq(schema.jobs.orgId, orgId),
         isNull(schema.jobs.deletedAt),
-        sql`${technicianId} = ANY(${schema.jobs.assignedTechs})`,
+        arrayContains(schema.jobs.assignedTechs, technicianId),
         gte(schema.jobs.scheduledStart, today),
         lt(schema.jobs.scheduledStart, tomorrow),
       ));

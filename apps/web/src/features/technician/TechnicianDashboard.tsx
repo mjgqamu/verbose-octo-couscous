@@ -53,7 +53,6 @@ export function TechnicianDashboard() {
     if (!user) return;
     setLoading(true);
 
-    const today = new Date().toISOString().split("T")[0];
     const params = new URLSearchParams({
       status: "scheduled,assigned,in_progress,waiting",
       sortBy: "scheduledStart",

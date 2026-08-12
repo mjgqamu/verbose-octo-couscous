@@ -2,7 +2,7 @@
 // Simple keyword-based search over ai_knowledge_documents.
 // Future: upgrade to pgvector similarity search.
 
-import { db, schema, eq, and, or, sql } from "@sitepilot/db";
+import { db, schema, eq, and, or, iLike } from "@sitepilot/db";
 
 // ---- Types ----
 
@@ -41,8 +41,8 @@ export async function searchKnowledge(
   const conditions = keywords.map((keyword) => {
     const pattern = `%${keyword}%`;
     return or(
-      sql`${schema.aiKnowledgeDocuments.title} ILIKE ${pattern}`,
-      sql`${schema.aiKnowledgeDocuments.content} ILIKE ${pattern}`,
+      iLike(schema.aiKnowledgeDocuments.title, pattern),
+      iLike(schema.aiKnowledgeDocuments.content, pattern),
     );
   });
 
