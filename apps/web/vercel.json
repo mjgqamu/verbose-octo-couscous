@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://sitepilot-api.vercel.app/api/$1"
+      "destination": "https://sitepilot-api-site-pilot6.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",
