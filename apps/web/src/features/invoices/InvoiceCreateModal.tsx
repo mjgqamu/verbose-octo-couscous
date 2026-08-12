@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../lib/auth";
 import { api } from "../../lib/api";
-import { X, Plus, Trash2, DollarSign } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
 
 interface CustomerOption {
   id: string;

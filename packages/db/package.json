@@ -12,7 +12,10 @@
     "push": "drizzle-kit push",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "migrate:sqlite": "bun run src/sqlite/migrate.ts",
+    "seed:sqlite": "DB_DRIVER=sqlite DATABASE_URL=file:./dev.db bun run src/seed.ts",
+    "generate:sqlite": "bunx drizzle-kit generate --config=drizzle.sqlite.config.ts"
   },
   "dependencies": {
     "@sitepilot/shared": "workspace:*",

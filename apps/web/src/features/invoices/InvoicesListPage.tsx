@@ -6,7 +6,7 @@ import { useAuth } from "../../lib/auth";
 import { api } from "../../lib/api";
 import { DashboardLayout } from "../dashboard/DashboardLayout";
 import { InvoiceCreateModal } from "./InvoiceCreateModal";
-import { Plus, Search, Filter, FileText, DollarSign, Clock } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 
 interface InvoiceSummary {
   id: string;
@@ -193,7 +193,6 @@ export function InvoicesListPage() {
                 {invoices.map((inv) => {
                   const badge = getStatusBadge(inv.status);
                   const overdue = isOverdue(inv.dueDate, inv.status);
-                  const displayStatus = overdue ? "overdue" : inv.status;
                   const displayBadge = overdue
                     ? getStatusBadge("overdue")
                     : badge;

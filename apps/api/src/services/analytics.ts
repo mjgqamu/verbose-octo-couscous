@@ -1,7 +1,7 @@
 // SitePilot AI — Analytics Service
 // Aggregation queries for dashboard, reports, and AI performance.
 
-import { db, eq, and, isNull, isNotNull, gte, lte, count, sum, avg, sql } from "@sitepilot/db";
+import { db, eq, and, isNull, isNotNull, gte, lte, count, sum, avg, sql, dateTruncDay, dateDiffHours } from "@sitepilot/db";
 import { schema } from "@sitepilot/db";
 
 const {
@@ -345,7 +345,7 @@ export class AnalyticsManager {
       // Lead trend — by day for this month, by month for wider ranges
       db
         .select({
-          period: sql<string>`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`,
+          period: dateTruncDay(leads.createdAt),
           count: count(),
         })
         .from(leads)
@@ -357,14 +357,14 @@ export class AnalyticsManager {
             lte(leads.createdAt, range.to),
           ),
         )
-        .groupBy(sql`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`)
-        .orderBy(sql`TO_CHAR(${leads.createdAt}, 'YYYY-MM-DD')`),
+        .groupBy(dateTruncDay(leads.createdAt))
+        .orderBy(dateTruncDay(leads.createdAt)),
     ]);
 
     return {
       bySource: bySource.map((r) => ({ source: r.source, count: Number(r.count) })),
       byStage: byStage.map((r) => ({ stage: r.stage, count: Number(r.count) })),
-      trend: trend.map((r) => ({ period: r.period, count: Number(r.count) })),
+      trend: trend.map((r) => ({ period: String(r.period), count: Number(r.count) })),
     };
   }
 
@@ -379,7 +379,7 @@ export class AnalyticsManager {
       // Revenue trend
       db
         .select({
-          period: sql<string>`TO_CHAR(${invoices.paidAt}, 'YYYY-MM-DD')`,
+          period: dateTruncDay(invoices.paidAt),
           revenue: sum(invoices.total),
         })
         .from(invoices)
@@ -392,8 +392,8 @@ export class AnalyticsManager {
             lte(invoices.paidAt, range.to),
           ),
         )
-        .groupBy(sql`TO_CHAR(${invoices.paidAt}, 'YYYY-MM-DD')`)
-        .orderBy(sql`TO_CHAR(${invoices.paidAt}, 'YYYY-MM-DD')`),
+        .groupBy(dateTruncDay(invoices.paidAt))
+        .orderBy(dateTruncDay(invoices.paidAt)),
 
       // Revenue by service type (via jobs linked to invoices)
       db
@@ -418,7 +418,7 @@ export class AnalyticsManager {
     ]);
 
     return {
-      trend: trend.map((r) => ({ period: r.period, revenue: Number(r.revenue ?? 0) })),
+      trend: trend.map((r) => ({ period: String(r.period), revenue: Number(r.revenue ?? 0) })),
       byServiceType: byServiceType.map((r) => ({
         serviceType: r.serviceType,
         revenue: Number(r.revenue ?? 0),
@@ -481,7 +481,7 @@ export class AnalyticsManager {
       db
         .select({
           avgHours: avg(
-            sql<number>`EXTRACT(EPOCH FROM (${jobs.completedAt} - ${jobs.createdAt})) / 3600`,
+            dateDiffHours(jobs.createdAt, jobs.completedAt),
           ),
         })
         .from(jobs)

@@ -18,6 +18,17 @@ import analyticsRoutes from "./routes/analytics.js";
 import aiAnalystRoutes from "./routes/ai-analyst.js";
 import { errorHandler } from "./lib/errors.js";
 
+// ---------------------------------------------------------------------------
+// SitePilot API — Hono app definition (runtime-agnostic).
+//
+// This module ONLY builds the Hono app and must never bind a port or start a
+// server. Consumers:
+//   - ./server.ts  — Bun dev/prod server (Bun.serve)
+//   - ./api/index.ts — Vercel serverless entry (hono/vercel adapter)
+//
+// The default export is required by Vercel's Hono framework preset, which
+// expects the app instance itself as the module's default export.
+// ---------------------------------------------------------------------------
 const app = new Hono();
 
 // ---- Global middleware ----
@@ -74,12 +85,4 @@ app.all("/api/*", (c) => {
   );
 });
 
-// ---- Start server ----
-const port = parseInt(process.env.PORT ?? "3001");
-
-export default {
-  port,
-  fetch: app.fetch,
-};
-
-console.log(`🚀 SitePilot API server ready on port ${port}`);
+export default app;

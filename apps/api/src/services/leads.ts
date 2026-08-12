@@ -1,4 +1,4 @@
-import { db, schema, eq, and, isNull, desc, asc, sql, count, gt, lt } from "@sitepilot/db";
+import { db, schema, eq, and, or, iLike, isNull, desc, asc, sql, count, gt, lt } from "@sitepilot/db";
 import type { LeadStage } from "@sitepilot/shared";
 import { getLeadScorer } from "./ai/lead-scorer.js";
 import { getFollowUpManager } from "./follow-ups.js";
@@ -99,7 +99,12 @@ export async function listLeads(params: ListLeadsParams) {
   if (search) {
     const pattern = `%${search}%`;
     conditions.push(
-      sql`(${schema.leads.contactName} ILIKE ${pattern} OR ${schema.leads.contactPhone} ILIKE ${pattern} OR ${schema.leads.contactEmail} ILIKE ${pattern} OR ${schema.leads.title} ILIKE ${pattern})`
+      or(
+        iLike(schema.leads.contactName, pattern),
+        iLike(schema.leads.contactPhone, pattern),
+        iLike(schema.leads.contactEmail, pattern),
+        iLike(schema.leads.title, pattern),
+      )!, 
     );
   }
 

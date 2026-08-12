@@ -2,7 +2,7 @@
 // Defines all tools the AI receptionist can call, plus the executor
 // that actually runs them against the database.
 
-import { db, schema, eq, and, gte, lte, or, sql } from "@sitepilot/db";
+import { db, schema, eq, and, gte, lte, or, iLike } from "@sitepilot/db";
 import type { LLMToolDefinition } from "./llm.js";
 import * as leadsService from "../leads.js";
 import * as customersService from "../customers.js";
@@ -536,8 +536,8 @@ export class ToolExecutor {
     const conditions = keywords.map((keyword) => {
       const pattern = `%${keyword}%`;
       return or(
-        sql`${schema.aiKnowledgeDocuments.title} ILIKE ${pattern}`,
-        sql`${schema.aiKnowledgeDocuments.content} ILIKE ${pattern}`,
+        iLike(schema.aiKnowledgeDocuments.title, pattern),
+        iLike(schema.aiKnowledgeDocuments.content, pattern),
       );
     });
 

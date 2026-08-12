@@ -1,9 +1,12 @@
-import { db } from "./db";
-import * as schema from "./schema/index";
+import { db, schema, runMigrations, isSqliteConfigured } from "./index";
 import { eq } from "drizzle-orm";
 
 async function seed() {
   console.log("🌱 Seeding database...");
+  if (isSqliteConfigured()) {
+    console.log("  (SQLite mode — applying migrations first)");
+    await runMigrations();
+  }
 
   // 1. Create Demo Org
   const [org] = await db
@@ -414,6 +417,302 @@ async function seed() {
     });
   }
   console.log(`  ✅ ${activityValues.length} Lead activities created`);
+
+  // 7b. Create Quotes (some accepted / sent)
+  const now = new Date();
+  const [quote1] = await db
+    .insert(schema.quotes)
+    .values({
+      orgId: org.id,
+      number: "Q-2026-0001",
+      leadId: createdLeads[3]!.id,
+      customerId: cust3.id,
+      status: "sent",
+      title: "Kitchen sink replacement + garbage disposal install",
+      description: "Replace double-basin kitchen sink and install new InSinkErator disposal.",
+      subtotal: 750,
+      taxRate: 0.0825,
+      taxAmount: 61.88,
+      total: 811.88,
+      currency: "USD",
+      validUntil: new Date(now.getTime() + 30 * 86400000),
+      sentAt: new Date("2026-07-14T10:00:00Z"),
+      createdBy: owner.id,
+    })
+    .returning();
+  const [quote2] = await db
+    .insert(schema.quotes)
+    .values({
+      orgId: org.id,
+      number: "Q-2026-0002",
+      leadId: createdLeads[4]!.id,
+      customerId: cust1.id,
+      status: "accepted",
+      title: "Water softener installation",
+      description: "Install 48k grain water softener with bypass loop.",
+      subtotal: 1200,
+      taxRate: 0.0825,
+      taxAmount: 99,
+      total: 1299,
+      currency: "USD",
+      validUntil: new Date(now.getTime() + 30 * 86400000),
+      sentAt: new Date("2026-07-12T09:00:00Z"),
+      acceptedAt: new Date("2026-07-13T14:00:00Z"),
+      createdBy: owner.id,
+    })
+    .returning();
+  const [quote3] = await db
+    .insert(schema.quotes)
+    .values({
+      orgId: org.id,
+      number: "Q-2026-0003",
+      leadId: createdLeads[2]!.id,
+      customerId: cust2.id,
+      status: "sent",
+      title: "Quarterly maintenance contract — 12 properties",
+      description: "Quarterly plumbing maintenance for Martinez Property Management portfolio.",
+      subtotal: 3600,
+      taxRate: 0,
+      taxAmount: 0,
+      total: 3600,
+      currency: "USD",
+      sentAt: new Date("2026-07-15T11:00:00Z"),
+      createdBy: owner.id,
+    })
+    .returning();
+  const [quote4] = await db
+    .insert(schema.quotes)
+    .values({
+      orgId: org.id,
+      number: "Q-2026-0004",
+      customerId: cust5.id,
+      status: "draft",
+      title: "Bathroom fixture upgrade",
+      description: "Upgrade bathroom fixtures — quote in progress.",
+      subtotal: 950,
+      taxAmount: 78.38,
+      total: 1028.38,
+      createdBy: owner.id,
+    })
+    .returning();
+  console.log("  ✅ 4 Quotes created");
+
+  // 7c. Create Jobs across statuses (2 completed, 1 scheduled, 1 in_progress)
+  const [job1] = await db
+    .insert(schema.jobs)
+    .values({
+      orgId: org.id,
+      number: "J-2026-0001",
+      customerId: cust1.id,
+      leadId: createdLeads[6]!.id,
+      quoteId: quote2.id,
+      title: "Water softener installation — Alice Williams",
+      status: "completed",
+      serviceType: "water_softener",
+      assignedTechs: [tech.id],
+      scheduledStart: new Date(now.getTime() - 21 * 86400000),
+      scheduledEnd: new Date(now.getTime() - 21 * 86400000 + 3 * 3600000),
+      actualStart: new Date(now.getTime() - 21 * 86400000),
+      actualEnd: new Date(now.getTime() - 21 * 86400000 + 2.5 * 3600000),
+      estimatedHours: 3,
+      actualHours: 2.5,
+      completedAt: new Date(now.getTime() - 21 * 86400000),
+      tags: ["residential", "water_softener"],
+    })
+    .returning();
+  const [job2] = await db
+    .insert(schema.jobs)
+    .values({
+      orgId: org.id,
+      number: "J-2026-0002",
+      customerId: cust3.id,
+      leadId: createdLeads[3]!.id,
+      quoteId: quote1.id,
+      title: "Sink replacement — Jennifer Taylor",
+      status: "completed",
+      serviceType: "sink_replacement",
+      assignedTechs: [tech.id],
+      scheduledStart: new Date(now.getTime() - 14 * 86400000),
+      scheduledEnd: new Date(now.getTime() - 14 * 86400000 + 4 * 3600000),
+      actualStart: new Date(now.getTime() - 14 * 86400000),
+      actualEnd: new Date(now.getTime() - 14 * 86400000 + 3.75 * 3600000),
+      estimatedHours: 4,
+      actualHours: 3.75,
+      completedAt: new Date(now.getTime() - 14 * 86400000),
+    })
+    .returning();
+  const [job3] = await db
+    .insert(schema.jobs)
+    .values({
+      orgId: org.id,
+      number: "J-2026-0003",
+      customerId: cust4.id,
+      leadId: createdLeads[0]!.id,
+      title: "Water heater replacement — urgent",
+      status: "scheduled",
+      serviceType: "water_heater",
+      assignedTechs: [tech.id],
+      scheduledStart: new Date(now.getTime() + 2 * 86400000),
+      scheduledEnd: new Date(now.getTime() + 2 * 86400000 + 4 * 3600000),
+      estimatedHours: 4,
+      priority: 1,
+    })
+    .returning();
+  await db.insert(schema.jobs).values({
+    orgId: org.id,
+    number: "J-2026-0004",
+    customerId: cust2.id,
+    leadId: createdLeads[5]!.id,
+    title: "Commercial drain cleaning — Martinez PM",
+    status: "in_progress",
+    serviceType: "drain_cleaning",
+    assignedTechs: [tech.id],
+    scheduledStart: now,
+    scheduledEnd: new Date(now.getTime() + 3 * 3600000),
+    actualStart: now,
+    estimatedHours: 3,
+  });
+  console.log("  ✅ 4 Jobs created");
+
+  // 7d. Create Invoices (2 paid this month, 1 sent, 1 draft) + line items + payments
+  const [inv1] = await db
+    .insert(schema.invoices)
+    .values({
+      orgId: org.id,
+      number: "INV-2026-0001",
+      customerId: cust1.id,
+      jobId: job1.id,
+      quoteId: quote2.id,
+      status: "paid",
+      subtotal: 1200,
+      taxAmount: 99,
+      total: 1299,
+      amountPaid: 1299,
+      balanceDue: 0,
+      issuedAt: new Date(now.getTime() - 20 * 86400000),
+      paidAt: new Date(now.getTime() - 19 * 86400000),
+      dueDate: new Date(now.getTime() - 5 * 86400000),
+    })
+    .returning();
+  const [inv2] = await db
+    .insert(schema.invoices)
+    .values({
+      orgId: org.id,
+      number: "INV-2026-0002",
+      customerId: cust3.id,
+      jobId: job2.id,
+      quoteId: quote1.id,
+      status: "paid",
+      subtotal: 750,
+      taxAmount: 61.88,
+      total: 811.88,
+      amountPaid: 811.88,
+      balanceDue: 0,
+      issuedAt: new Date(now.getTime() - 13 * 86400000),
+      paidAt: new Date(now.getTime() - 10 * 86400000),
+      dueDate: new Date(now.getTime() + 5 * 86400000),
+    })
+    .returning();
+  const [inv3] = await db
+    .insert(schema.invoices)
+    .values({
+      orgId: org.id,
+      number: "INV-2026-0003",
+      customerId: cust4.id,
+      jobId: job3.id,
+      status: "sent",
+      subtotal: 1850,
+      taxAmount: 152.63,
+      total: 2002.63,
+      amountPaid: 0,
+      balanceDue: 2002.63,
+      issuedAt: new Date(now.getTime() - 2 * 86400000),
+      dueDate: new Date(now.getTime() + 28 * 86400000),
+    })
+    .returning();
+  await db.insert(schema.invoices).values({
+    orgId: org.id,
+    number: "INV-2026-0004",
+    customerId: cust5.id,
+    status: "draft",
+    subtotal: 950,
+    taxAmount: 78.38,
+    total: 1028.38,
+    amountPaid: 0,
+    balanceDue: 1028.38,
+  });
+  // Line items + payments for the paid invoices
+  await db.insert(schema.invoiceLineItems).values([
+    { orgId: org.id, invoiceId: inv1.id, description: "Water softener unit (48k grain)", quantity: 1, unitPrice: 900, total: 900 },
+    { orgId: org.id, invoiceId: inv1.id, description: "Installation labor", quantity: 4, unitPrice: 75, total: 300 },
+    { orgId: org.id, invoiceId: inv2.id, description: "Kitchen sink (double basin)", quantity: 1, unitPrice: 450, total: 450 },
+    { orgId: org.id, invoiceId: inv2.id, description: "Garbage disposal + install", quantity: 1, unitPrice: 300, total: 300 },
+  ]);
+  await db.insert(schema.payments).values([
+    { orgId: org.id, invoiceId: inv1.id, customerId: cust1.id, amount: 1299, method: "credit_card", status: "completed", transactionId: "pi_test_0001", paidAt: new Date(now.getTime() - 19 * 86400000) },
+    { orgId: org.id, invoiceId: inv2.id, customerId: cust3.id, amount: 811.88, method: "bank_transfer", status: "completed", transactionId: "pi_test_0002", paidAt: new Date(now.getTime() - 10 * 86400000) },
+  ]);
+  console.log("  ✅ 4 Invoices + 2 payments + line items created");
+
+  // 7e. Appointments (2 completed, 1 scheduled)
+  await db.insert(schema.appointments).values([
+    { orgId: org.id, customerId: cust1.id, leadId: createdLeads[6]!.id, jobId: job1.id, title: "Water softener install", status: "completed", scheduledStart: new Date(now.getTime() - 21 * 86400000), scheduledEnd: new Date(now.getTime() - 21 * 86400000 + 3 * 3600000), timezone: "America/Chicago", assignedTechnicians: [tech.id] },
+    { orgId: org.id, customerId: cust3.id, leadId: createdLeads[3]!.id, jobId: job2.id, title: "Sink replacement", status: "completed", scheduledStart: new Date(now.getTime() - 14 * 86400000), scheduledEnd: new Date(now.getTime() - 14 * 86400000 + 4 * 3600000), timezone: "America/Chicago", assignedTechnicians: [tech.id] },
+    { orgId: org.id, customerId: cust4.id, leadId: createdLeads[0]!.id, jobId: job3.id, title: "Water heater replacement", status: "scheduled", scheduledStart: new Date(now.getTime() + 2 * 86400000), scheduledEnd: new Date(now.getTime() + 2 * 86400000 + 4 * 3600000), timezone: "America/Chicago", assignedTechnicians: [tech.id] },
+  ]);
+  console.log("  ✅ 3 Appointments created");
+
+  // 7f. AI configurations + knowledge documents
+  await db.insert(schema.aiConfigurations).values([
+    {
+      orgId: org.id,
+      name: "AI Receptionist",
+      configType: "receptionist",
+      model: "gpt-4o",
+      systemPrompt: "You are the AI receptionist for Demo Plumbing Co. Answer calls about plumbing services, capture lead details, and schedule appointments. Escalate emergencies to a human.",
+      personality: { tone: "professional and friendly", greeting: "Thank you for calling Demo Plumbing Co, how can we help?" },
+      toolsEnabled: ["schedule_appointment", "create_lead", "check_availability", "escalate_to_human"],
+      fallbackAction: "escalate",
+      language: "en",
+      maxTurns: 20,
+      isActive: true,
+      isDefault: true,
+    },
+    {
+      orgId: org.id,
+      name: "Sales Follow-up Agent",
+      configType: "follow_up",
+      model: "gpt-4o",
+      systemPrompt: "You are a sales follow-up assistant for Demo Plumbing Co. Nudge quoted customers, answer pricing questions, and book jobs.",
+      personality: { tone: "friendly and persistent" },
+      toolsEnabled: ["send_quote", "schedule_appointment", "create_lead"],
+      fallbackAction: "escalate",
+      isActive: true,
+      isDefault: false,
+    },
+  ]);
+  await db.insert(schema.aiKnowledgeDocuments).values([
+    { orgId: org.id, title: "Services & Pricing", contentType: "pricing", content: "Water heater replacement from $1,850. Sink replacement from $450 + labor. Drain cleaning from $199. Emergency callout $99.", metadata: { category: "pricing" } },
+    { orgId: org.id, title: "Service Area", contentType: "service_catalog", content: "We serve Austin, TX and surrounding areas within 30 miles. Service hours Mon-Fri 8am-5pm, emergency line 24/7.", metadata: { category: "faq" } },
+  ]);
+  console.log("  ✅ AI configurations + knowledge documents created");
+
+  // 7g. Subscription (professional plan, active)
+  await db.insert(schema.subscriptions).values({
+    orgId: org.id,
+    stripeSubscriptionId: "sub_demo_0001",
+    stripeCustomerId: "cus_demo_0001",
+    planTier: "professional",
+    status: "active",
+    seats: 5,
+    unitPrice: 99,
+    totalPrice: 495,
+    currency: "USD",
+    billingCycle: "monthly",
+    currentPeriodStart: new Date(now.getFullYear(), now.getMonth(), 1),
+    currentPeriodEnd: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
+  });
+  console.log("  ✅ Subscription created");
 
   // 8. Create 3 Conversations with messages
   const [conv1] = await db

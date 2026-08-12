@@ -1,6 +1,6 @@
 // SitePilot AI — Invoice Service
 // Multi-tenant invoice management with payments.
-import { db, schema, eq, and, isNull, desc, asc, sql, count, sum, lt, gt, gte } from "@sitepilot/db";
+import { db, schema, eq, and, or, iLike, isNull, desc, asc, sql, count, sum, lt, gt, gte } from "@sitepilot/db";
 
 // ---- Types ----
 
@@ -171,7 +171,10 @@ export class InvoiceManager {
     if (search) {
       const pattern = `%${search}%`;
       conditions.push(
-        sql`(${schema.invoices.number} ILIKE ${pattern} OR ${schema.invoices.notes} ILIKE ${pattern})`,
+        or(
+        iLike(schema.invoices.number, pattern),
+        iLike(schema.invoices.notes, pattern)
+      )!,
       );
     }
 

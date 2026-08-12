@@ -1,4 +1,4 @@
-import { db, schema, eq, and, isNull, desc, asc, count, sql, gt, lt } from "@sitepilot/db";
+import { db, schema, eq, and, or, iLike, isNull, desc, asc, count, gt, lt } from "@sitepilot/db";
 
 // ---- Types ----
 export interface ListCustomersParams {
@@ -66,7 +66,13 @@ export async function listCustomers(params: ListCustomersParams) {
   if (search) {
     const pattern = `%${search}%`;
     conditions.push(
-      sql`(${schema.customers.firstName} ILIKE ${pattern} OR ${schema.customers.lastName} ILIKE ${pattern} OR ${schema.customers.company} ILIKE ${pattern} OR ${schema.customers.email} ILIKE ${pattern} OR ${schema.customers.phone} ILIKE ${pattern})`
+      or(
+        iLike(schema.customers.firstName, pattern),
+        iLike(schema.customers.lastName, pattern),
+        iLike(schema.customers.company, pattern),
+        iLike(schema.customers.email, pattern),
+        iLike(schema.customers.phone, pattern)
+      )!
     );
   }
 
