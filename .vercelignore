@@ -1,0 +1,24 @@
+# Keep local build artifacts and VCS noise OUT of Vercel deploys.
+# Without this, the Vercel CLI uploads gitignored files such as apps/*/dist,
+# *.tsbuildinfo and bun.lock, which poison the build (stale .d.ts in dist/
+# changes type resolution and breaks tsc in later build phases).
+node_modules
+**/node_modules
+dist
+**/dist
+*.tsbuildinfo
+**/*.tsbuildinfo
+.git
+**/.git
+.vercel
+**/.vercel
+.env
+**/.env
+.env.*
+**/.env.*
+docker
+**/docker
+dev.db
+**/dev.db
+data
+**/data
