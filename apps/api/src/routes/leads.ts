@@ -111,7 +111,7 @@ leads.get("/:id", async (c) => {
 // POST /api/v1/orgs/:orgId/leads
 leads.post("/", zValidator("json", createLeadSchema), async (c) => {
   const user = c.get("user");
-  const body = c.req.valid("json");
+  const body = c.req.valid("json") as z.infer<typeof createLeadSchema>;
 
   const lead = await leadsService.createLead({
     orgId: user.orgId,

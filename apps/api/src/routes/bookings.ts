@@ -126,7 +126,7 @@ bookings.get("/appointments/:id", requireAuth, orgContext, async (c) => {
 bookings.patch("/appointments/:id", requireAuth, orgContext, zValidator("json", updateAppointmentSchema), async (c) => {
   const user = c.get("user");
   const appointmentId = c.req.param("id") as string;
-  const body = c.req.valid("json");
+  const body = c.req.valid("json") as z.infer<typeof updateAppointmentSchema>;
 
   const bookingService = getBookingService();
 

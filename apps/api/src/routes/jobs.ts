@@ -135,7 +135,7 @@ jobs.get("/:id", async (c) => {
 // ---- POST /api/v1/orgs/:orgId/jobs ----
 jobs.post("/", zValidator("json", createJobSchema), async (c) => {
   const user = c.get("user");
-  const body = c.req.valid("json");
+  const body = c.req.valid("json") as z.infer<typeof createJobSchema>;
 
   const job = await jobManager.createJob(user.orgId, { ...body });
   if (!job) throw badRequest("Failed to create job");
